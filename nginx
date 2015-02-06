@@ -1,0 +1,94 @@
+1. Install nginx from 1. apt-get
+
+#apt-get install nginx
+
+
+2.Configure nginx  3. Host a sample static website (sample.com) on nginx.
+#vim /etc/nginx/sites-enabled/prashant
+server {
+        listen 8040 default_server;
+        #listen [::]:80 default_server ipv6only=on;
+
+        root /home/prashant/;
+        index index.html index.htm excercise.html;
+
+        # Make site accessible from http://localhost/
+        server_name prashant.com;
+        location / {
+                
+        #       try_files $uri $uri/ =404;
+                # Uncomment to enable naxsi on this location
+                # include /etc/nginx/naxsi.rules
+        }
+
+
+
+4. Redirect sample.com to www.sample.com
+
+vim /etc/nginx/sites-enabled/www 
+
+server {
+        listen 8050;
+        #listen [::]:80 default_server ipv6only=on;
+
+        root /home/prashant/demo/;
+        index index.html index.htm excercise.html;
+
+        # Make site accessible from http://localhost/
+        server_name www.prashant.com;
+
+        location / {
+                # First attempt to serve request as file, then
+                # as directory, then fall back to displaying a 404.
+                try_files $uri $uri/ =404;
+                # Uncomment to enable naxsi on this location
+                # include /etc/nginx/naxsi.rules
+        }
+
+#vim /etc/nginx/sites-enabled/prashant
+server {
+        listen 8040 default_server;
+        #listen [::]:80 default_server ipv6only=on;
+
+        root /home/prashant/;
+        index index.html index.htm excercise.html;
+
+        # Make site accessible from http://localhost/
+        server_name prashant.com;
+        location / {
+        rewrite     ^(.*)   http://www.prashant.com:8050$1 permanent;
+        #       try_files $uri $uri/ =404;
+                # Uncomment to enable naxsi on this location
+                # include /etc/nginx/naxsi.rules
+
+5. Create a proxy link for any app.
+#vim /etc/nginx/sites-enabled/prashant
+
+server {
+        listen 8040 default_server;
+        #listen [::]:80 default_server ipv6only=on;
+
+        root /home/prashant/;
+        index index.html index.htm excercise.html;
+
+        # Make site accessible from http://localhost/
+        server_name prashant.com;
+        location /app {
+                # First attempt to serve request as file, then
+                # as directory, then fall back to displaying a 404.
+                proxy_pass http://localhost:8090;
+        #       try_files $uri $uri/ =404;
+                # Uncomment to enable naxsi on this location
+                # include /etc/nginx/naxsi.rules
+        }
+
+
+6. Create a custom access log format which will include RemoteIP, RemoteUserTimeZone, FileRequest, UserAgent
+
+#vim /etc/nginx/nginx.conf
+ 
+
+log_format logformat '$remote_addr - $remote_user [$time_local] $http_user_agent $request';
+        access_log /var/log/nginx/access.log logformat;
+        error_log /var/log/nginx/error.log;
+
