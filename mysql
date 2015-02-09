@@ -1,0 +1,103 @@
+1)Create user and give access to specific DB & specific permission (select).
+
+#sudo mysql -u root -p
+
+mysql> create user exer@localhost identified by 'password'
+    -> ;
+
+mysql> grant select on *.* to exer@localhost ;
+ 
+mysql> flush privileges;
+
+mysql> exit
+
+#sudo mysql -u exer -p
+Enter password:password
+
+mysql> use ig;
+
+mysql> select * from ig
+    -> ;
++--------+----------+------------+
+| emp_id | name     | department |
++--------+----------+------------+
+|    123 | prashant | aws        |
+|    124 | tarun    | aws        |
++--------+----------+------------+
+2 rows in set (0.00 sec)
+
+
+mysql> drop table ig;
+ERROR 1142 (42000): DROP command denied to user 'exer'@'localhost' for table 'ig'
+
+mysql> exit
+
+2)After completing the First exercise Revoke the permission and delete the user.  
+
+prashant@prashant-ThinkPad-T61:~$ sudo mysql -u root -p
+Enter password: 
+
+mysql> revoke select on *.* from exer@localhost;
+
+#sudo mysql -u exer -p
+
+mysql> use ig 
+ERROR 1044 (42000): Access denied for user 'exer'@'localhost' to database 'ig'
+
+
+4)change the data directory for mysql
+
+#sudo mkdir -p /data/mysql
+#cp -R /var/lib/mysql /data/mysql
+#
+#sudo vim /etc/mysql/my.cnf
+
+[mysqld]
+#
+# * Basic Settings
+#
+user            = mysql
+pid-file        = /var/run/mysqld/mysqld.pid
+socket          = /var/run/mysqld/mysqld.sock
+port            = 3306
+basedir         = /usr
+datadir         = /data/mysql/mysql
+
+#sudo vim /etc/apparmor.d/usr.sbin.mysqld
+
+/data/mysql/mysql/ r,
+/data/mysql/mysql/** rwk,
+
+#sudo /etc/init.d/apparmor reload
+#sudo service mysql restart
+
+5) Enable slow query logs
+#sudo vim /etc/mysql/my.conf
+
+slow_query_log = 1
+log_slow_queries        = /var/log/mysql/mysql-slow.log
+
+#sudo service mysql reload
+#sudo mysql -u root -p
+mysql> use mysql;
+mysql> select * from slow_log;
+mysql> show variables like "%slow%";
+
++---------------------------+--------------------------------------------------+
+| Variable_name             | Value                                            |
++---------------------------+--------------------------------------------------+
+| log_slow_admin_statements | OFF                                              |
+| log_slow_slave_statements | OFF                                              |
+| slow_launch_time          | 2                                                |
+| slow_query_log            | ON                                               |
+| slow_query_log_file       | /data/mysql/mysql/prashant-ThinkPad-T61-slow.log |
++---------------------------+--------------------------------------------------+
+
+6)Enable general logs;
+
+#sudo vim /etc/mysql/my.conf
+
+general_log_file        = /var/log/mysql/mysql.log
+general_log             = 1
+
+#sudo service mysql reload
